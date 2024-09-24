@@ -155,48 +155,15 @@ public class AlunoDAO implements Map<String, Aluno> {
         try (Connection conn = DriverManager.getConnection(DAOconfig.URL, DAOconfig.USERNAME, DAOconfig.PASSWORD);
              Statement stm = conn.createStatement()) {
 
-            // Actualizar a Sala
-            stm.executeUpdate(
-                    "INSERT INTO alunos " +
-                            "VALUES ('" + a.getNumero() + "', '" +
-                            a.getNome() + "', " +
-                            a.getEmail() + ") " +
-                            "ON DUPLICATE KEY UPDATE Nome=Values(Nome), " +
-                            "Email=Values(Email)");
-
-            // Actualizar a Aluno
-            stm.executeUpdate(
-                    "INSERT INTO alunos VALUES ('" + t.getId() + "', '" + s.getNumero() + "') " +
-                            "ON DUPLICATE KEY UPDATE Sala=VALUES(Sala)");
-
-            // Actualizar os alunos da Aluno
-            Collection<String> oldAl = getAlunosAluno(key, stm);
-            Collection<String> newAl = t.getAlunos().stream().collect(toList());
-            newAl.removeAll(oldAl);         // Alunos que entram na Aluno, em relação ao que está na BD
-            oldAl.removeAll(t.getAlunos().stream().collect(toList())); // Alunos que saem na Aluno, em relação ao que está na BD
-            try (PreparedStatement pstm = conn.prepareStatement("UPDATE alunos SET Aluno=? WHERE Num=?")) {
-                // Remover os que saem da Aluno (colocar a NULL a coluna que diz qual a Aluno dos alunos)
-                pstm.setNull(1, Types.VARCHAR);
-                for (String a : oldAl) {
-                    pstm.setString(2, a);
-                    pstm.executeUpdate();
-                }
-                // Adicionar os que entram na Aluno (colocar o Id da Aluno na coluna Aluno da tabela alunos)
-                // ATENÇÃO: Para já isto não vai funcionar pois os alunos não estão na tabela
-                //          (não há lá nada para atualizar).  Funcionará quando tivermos um AlunoDAO
-                //          a guardar os alunos na tabela 'alunos'.
-                pstm.setString(1, t.getId());
-                for (String a : newAl) {
-                    pstm.setString(2, a);
-                    pstm.executeUpdate();
-                }
-            }
+             stm.executeUpdate(
+                    "INSERT INTO alunos VALUES ('" + a.getNumero() + "', '" + a.getNome() + "', '" + a.getEmail() + "') ");
 
         } catch (SQLException e) {
             // Database error!
             e.printStackTrace();
             throw new NullPointerException(e.getMessage());
         }
+
         return res;
     }
 
